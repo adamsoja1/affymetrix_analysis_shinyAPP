@@ -1,0 +1,5 @@
+ p53 status
+HCT_p53PK1.CEL P Kontrola 
+HCT_p53MK1.CEL M Kontrola
+HCT_p53P0h.CEL P 0
+HCT_p53M0h.CEL M 0
