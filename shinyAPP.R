@@ -5,8 +5,6 @@ ui = navbarPage(title = 'Aplikacja GFP',
   
   tabPanel('Wczytaj plik',
 
-    
-      
       fileInput("file", "Wybierz pliki",multiple = TRUE, accept=c( ".CEL",'.txt')),
       
       htmlOutput('output_name')
@@ -24,9 +22,9 @@ ui = navbarPage(title = 'Aplikacja GFP',
   tabPanel('Histogramy(dane nieznormalizowane)',
            
            h2('Histogramy dla danych nieznormalizowanych'),
-           plotOutput('histogram1',height = 700),
-           plotOutput('histogram2',height = 700),
-           plotOutput('histogram3',height = 700)
+           shinycssloaders::withSpinner(plotOutput('histogram1',height = 700)),
+           shinycssloaders::withSpinner(plotOutput('histogram2',height = 700)),
+           shinycssloaders::withSpinner(plotOutput('histogram3',height = 700)),
 
   ),
   tabPanel('Wykres degradacji RNA',
@@ -36,13 +34,17 @@ ui = navbarPage(title = 'Aplikacja GFP',
   ),
   tabPanel('Wykresy po znormalizowaniu',
        
-           plotOutput('normalizacja1',height = 700),
+           shinycssloaders::withSpinner(plotOutput('normalizacja1',height = 2000)),
            
   ),
   tabPanel('Wykresy po znormalizowaniu osobne',
          
-           plotOutput('normalizacja2',height = 700)
+           shinycssloaders::withSpinner(plotOutput('normalizacja2',height = 700)),
            
+  ),
+  tabPanel('FOLD CHANGE',
+           
+           shinycssloaders::withSpinner(verbatimTextOutput('normalizacja3')),
   ),
   )
 
@@ -162,27 +164,27 @@ server = function(input, output) {
                         pmcorrect.method = 'pmonly',
                         summary.method = 'medianpolish')
       
+      MAS_skala = exprs(normMAS)
+      RMA_skala = 2^exprs(normRMA)
       
       colors = c('red','blue','green','black')
-      par(mfrow=c(1,2))
-      plotDensity(exprs(normMAS), col = colors,
+      par(mfrow=c(2,1))
+      plotDensity(MAS_skala, col = colors,
                   main = "histogram MAS", xlab = "intensity",lwd = 2)
       sampleMAS = sampleNames(normMAS)
       legend('right',legend = c(sampleMAS),lty = 5,col = colors)
-      plotDensity(exprs(normRMA), col = rainbow(4),
+      plotDensity(RMA_skala, col = rainbow(4),
                   main = "Histogram RMA", xlab = "intensity")
       sampleRMA = sampleNames(normRMA)
       legend('topright',legend = c(sampleRMA),lty = 5,col = colors)
       
       
-    }else{
-      h2('Laduje')
     }
-  })
+    })
   
   output$normalizacja2 = renderPlot({
+    
     if (length(input$file$name)>0){
-      
       opis = input$file$datapath[5]
       samplesM=c('HCT_p53MK1.CEL','HCT_p53M0h.CEL')
       colors_M = c('black','red')
@@ -192,8 +194,8 @@ server = function(input, output) {
       RMAdlaM=expresso(data_M, bgcorrect.method = "rma", normalize.method = "quantiles",
                        pmcorrect.method = "pmonly", summary.method = "medianpolish")
       
-
-      
+      MAS_skala_m = exprs(MASdlaMM)
+      RMA_skala_m = 2^exprs(RMAdlaM)
       
       
       samplesP=c('HCT_p53PK1.CEL','HCT_p53P0h.CEL')
@@ -204,19 +206,25 @@ server = function(input, output) {
       RMAdlaP=expresso(data_P, bgcorrect.method = "rma", normalize.method = "quantiles",
                        pmcorrect.method = "pmonly", summary.method = "medianpolish")
       
+      MAS_skala_p = exprs(MASdlaMM)
+      RMA_skala_p = 2^exprs(RMAdlaM)
+      
       par(mfrow=c(2,2))
-      plotDensity(exprs(MASdlaMM), col =colors_M,
+      plotDensity(MAS_skala_m, col =colors_M,
                   main = "Histogram MAS HCT_p53M ", xlab="intensity")
       legend('topright', legend = samplesM, lty = 2, cex = 0.75, col = colors_M)
-      plotDensity(exprs(RMAdlaM), col = colors_M,
+      
+      plotDensity(RMA_skala_m, col = colors_M,
                   main = "Histogram RMA HCT_p53M", xlab="intensity")
       legend('topright', legend = samplesM, lty = 2, cex = 0.75, col = colors_M)
       
-      plotDensity(exprs(MASdlaP), col =colors_M,
+      plotDensity(MAS_skala_p, col =colors_M,
                   main = "Histogram MAS HCT_p53P ", xlab="intensity")
       legend('topright', legend = samplesP, lty = 2, col = colors_M)
-      plotDensity(exprs(RMAdlaP), col = colors_M,
+      
+      plotDensity(RMA_skala_p, col = colors_M,
                   main = "Histogram RMA HCT_p53P", xlab="intensity")
+      
       legend('topright', legend = samplesP, lty = 2, col = colors_M)
 
       
@@ -225,6 +233,138 @@ server = function(input, output) {
   })
   
   
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+
+
+  
+  
+output$normalizacja3 = renderPrint({
+  
+    
+
+    
+  if (length(input$file$name)>0){
+  opis = input$file$datapath[5]
+  Dane = ReadAffy(phenoData = opis)
+  sample = sampleNames(Dane)
+  
+  normMAS= expresso(Dane, bgcorrect.method = 'mas',
+                    normalize.method = 'constant',
+                    pmcorrect.method = 'mas',
+                    summary.method = 'mas')
+  
+  normRMA= expresso(Dane, bgcorrect.method = 'rma',
+                    normalize.method = 'quantiles',
+                    pmcorrect.method = 'pmonly',
+                    summary.method = 'medianpolish')
+  
+  MAS_skala = exprs(normMAS)
+  RMA_skala = 2^exprs(normRMA)
+  
+  
+  
+  MASdlaMzad6 =MAS_skala[,4]/MAS_skala[,2]
+  iloscMASMzad6=length(MASdlaMzad6[which(MASdlaMzad6 >= 1.2)])
+
+  
+  MASdlaPzad6=MAS_skala[,3]/MAS_skala[,1]
+  iloscMASPzad6=length(MASdlaPzad6[which(MASdlaPzad6 >= 1.2)])
+
+  
+  RMAdlaMzad6=RMA_skala[,4]/RMA_skala[,2]
+  iloscRMAMzad6=length(RMAdlaMzad6[which(RMAdlaMzad6 >= 1.2)])
+
+  
+  RMAdlaPzad6=RMA_skala[,3]/RMA_skala[,1]
+  iloscRMAPzad6=length(RMAdlaPzad6[which(RMAdlaPzad6 >= 1.2)])
+
+  
+  
+  samplesM=c('HCT_p53MK1.CEL','HCT_p53M0h.CEL')
+  colors_M = c('black','red')
+  data_M=ReadAffy(filenames = samplesM)
+  MASdlaMM=expresso(data_M, bgcorrect.method = "mas", normalize.method = "constant",
+                    pmcorrect.method = "mas", summary.method = "mas")
+  RMAdlaM=expresso(data_M, bgcorrect.method = "rma", normalize.method = "quantiles",
+                   pmcorrect.method = "pmonly", summary.method = "medianpolish")
+  
+  MAS_skala_m = exprs(MASdlaMM)
+  RMA_skala_m = 2^exprs(RMAdlaM)
+  
+  
+  samplesP=c('HCT_p53PK1.CEL','HCT_p53P0h.CEL')
+  colors_P = c('black','red')
+  data_P=ReadAffy(filenames = samplesP)
+  MASdlaP=expresso(data_P, bgcorrect.method = "mas", normalize.method = "constant",
+                   pmcorrect.method = "mas", summary.method = "mas")
+  RMAdlaP=expresso(data_P, bgcorrect.method = "rma", normalize.method = "quantiles",
+                   pmcorrect.method = "pmonly", summary.method = "medianpolish")
+  
+  MAS_skala_p = exprs(MASdlaMM)
+  RMA_skala_p = 2^exprs(RMAdlaM)
+ 
+  
+  MASdlaMzad9=MAS_skala_m[,2]/MAS_skala_m[,1]
+  iloscMASMzad9=length(MASdlaMzad9[which(MASdlaMzad9 >= 1.2)])
+
+  print(paste('Geny ktore wzrosly przynajmniej o 20% po napromienieniu wzgledem
+kontroli dla MAS5 dla normalizacji  tak jak w punkcie 9 zmienione o 20% (p53M)',iloscMASMzad9))
+  
+  
+  MASdlaPzad9=MAS_skala_p[,2]/MAS_skala_p[,1]
+  iloscMASPzad9=length(MASdlaPzad9[which(MASdlaPzad9 >= 1.2)])
+  
+  print(paste('Geny ktore wzrosly przynajmniej o 20% po napromienieniu wzgledem
+kontroli dla MAS5 dla normalizacji  tak jak w punkcie 9 (p53P)',iloscMASPzad9))
+  #RMA zad 9
+  RMAdlaMzad9=RMA_skala_m[,2]/RMA_skala_m[,1]
+  iloscRMAMzad9=length(RMAdlaMzad9[which(RMAdlaMzad9 >= 1.2)])
+
+  print(paste('Geny ktore wzrosly przynajmniej o 20% po napromienieniu wzgledem
+kontroli dla RMA dla normalizacji  tak jak w punkcie 9 (p53M)',iloscRMAMzad9))
+  
+  RMAdlaPzad9=RMA_skala_p[,2]/RMA_skala_p[,1]
+  iloscRMAPzad9=length(RMAdlaPzad9[which(RMAdlaPzad9 >= 1.2)])
+
+  print(paste('Geny ktore wzrosly przynajmniej o 20% po napromienieniu wzgledem
+kontroli dla  RMA dla normalizacji  tak jak w punkcie 9 (p53P)',iloscRMAPzad9))
+
+  
+    
+
+      print(paste(' Geny ktore wzrosly przynajmniej o 20% po napromienieniu wzgledem
+kontroli dla  MAS  dla normalizacji  tak jak w punkcie 6 (p53M)',iloscMASMzad6))
+      print(paste(' Geny ktore wzrosly przynajmniej o 20% po napromienieniu wzgledem
+kontroli dla  MASdla normalizacji  tak jak w punkcie 6 (p53P)',iloscMASPzad6))
+      print(paste(' Geny ktore wzrosly przynajmniej o 20% po napromienieniu wzgledem
+kontroli dla  RMA dla normalizacji  tak jak w punkcie 6 (p53M)',iloscRMAMzad6))
+      print(paste(' Geny ktore wzrosly przynajmniej o 20% po napromienieniu wzgledem
+kontroli dla  RMA dla normalizacji   tak jak w punkcie 6 (p53P)',iloscRMAPzad6))
+      
+      
+  }
+      
+      
+      
+      
+      
+    })
+    
+  
+  
+
+
 
 }
 
