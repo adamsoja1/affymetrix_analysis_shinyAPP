@@ -4,6 +4,9 @@ BiocManager::install("affy")
 library('affy')
 
 
+xz = 6
+o2 = paste('coscosos' , xz)
+
 opis=read.table('opis.txt')
 opis
 #wczytanie

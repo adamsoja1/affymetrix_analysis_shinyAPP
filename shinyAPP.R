@@ -7,7 +7,7 @@ ui = navbarPage(title = 'Aplikacja GFP',
 
       fileInput("file", "Wybierz pliki",multiple = TRUE, accept=c( ".CEL",'.txt')),
       
-      htmlOutput('output_name')
+      shinycssloaders::withSpinner(htmlOutput('output_name'))
     
   
   ),
@@ -15,7 +15,7 @@ ui = navbarPage(title = 'Aplikacja GFP',
     tabPanel('Obrazy',
     
       verbatimTextOutput('output', placeholder = FALSE),
-      plotOutput('images',width = 1500,height = 1500)
+      shinycssloaders::withSpinner(plotOutput('images',width = 1500,height = 1500))
     
     ),
   
@@ -29,7 +29,7 @@ ui = navbarPage(title = 'Aplikacja GFP',
   ),
   tabPanel('Wykres degradacji RNA',
            
-           plotOutput('degradation',height = 700),
+           shinycssloaders::withSpinner(plotOutput('degradation',height = 700)),
            
   ),
   tabPanel('Wykresy po znormalizowaniu',
@@ -44,7 +44,7 @@ ui = navbarPage(title = 'Aplikacja GFP',
   ),
   tabPanel('FOLD CHANGE',
            
-           shinycssloaders::withSpinner(verbatimTextOutput('normalizacja3')),
+           shinycssloaders::withSpinner(textOutput('normalizacja3')),
   ),
   )
 
@@ -249,7 +249,7 @@ server = function(input, output) {
 
   
   
-output$normalizacja3 = renderPrint({
+output$normalizacja3 = renderText({
   
     
 
@@ -318,45 +318,41 @@ output$normalizacja3 = renderPrint({
   MASdlaMzad9=MAS_skala_m[,2]/MAS_skala_m[,1]
   iloscMASMzad9=length(MASdlaMzad9[which(MASdlaMzad9 >= 1.2)])
 
-  print(paste('Geny ktore wzrosly przynajmniej o 20% po napromienieniu wzgledem
-kontroli dla MAS5 dla normalizacji  tak jak w punkcie 9 zmienione o 20% (p53M)',iloscMASMzad9))
+  o1 = paste('Geny ktore wzrosly przynajmniej o 20% po napromienieniu wzgledem kontroli dla MAS5 dla normalizacji  tak jak w punkcie 9 zmienione o 20% (p53M)',iloscMASMzad9)
   
   
   MASdlaPzad9=MAS_skala_p[,2]/MAS_skala_p[,1]
   iloscMASPzad9=length(MASdlaPzad9[which(MASdlaPzad9 >= 1.2)])
   
-  print(paste('Geny ktore wzrosly przynajmniej o 20% po napromienieniu wzgledem
-kontroli dla MAS5 dla normalizacji  tak jak w punkcie 9 (p53P)',iloscMASPzad9))
+ o2= paste('Geny ktore wzrosly przynajmniej o 20% po napromienieniu wzgledem kontroli dla MAS5 dla normalizacji  tak jak w punkcie 9 (p53P)' ,iloscMASPzad9)
   #RMA zad 9
   RMAdlaMzad9=RMA_skala_m[,2]/RMA_skala_m[,1]
   iloscRMAMzad9=length(RMAdlaMzad9[which(RMAdlaMzad9 >= 1.2)])
 
-  print(paste('Geny ktore wzrosly przynajmniej o 20% po napromienieniu wzgledem
-kontroli dla RMA dla normalizacji  tak jak w punkcie 9 (p53M)',iloscRMAMzad9))
+  o3 = paste('Geny ktore wzrosly przynajmniej o 20% po napromienieniu wzgledem kontroli dla RMA dla normalizacji  tak jak w punkcie 9 (p53M)'  ,iloscRMAMzad9)
   
   RMAdlaPzad9=RMA_skala_p[,2]/RMA_skala_p[,1]
   iloscRMAPzad9=length(RMAdlaPzad9[which(RMAdlaPzad9 >= 1.2)])
 
-  print(paste('Geny ktore wzrosly przynajmniej o 20% po napromienieniu wzgledem
-kontroli dla  RMA dla normalizacji  tak jak w punkcie 9 (p53P)',iloscRMAPzad9))
+  o4 = paste('Geny ktore wzrosly przynajmniej o 20% po napromienieniu wzgledem kontroli dla  RMA dla normalizacji  tak jak w punkcie 9 (p53P)' ,iloscRMAPzad9)
 
   
     
 
-      print(paste(' Geny ktore wzrosly przynajmniej o 20% po napromienieniu wzgledem
-kontroli dla  MAS  dla normalizacji  tak jak w punkcie 6 (p53M)',iloscMASMzad6))
-      print(paste(' Geny ktore wzrosly przynajmniej o 20% po napromienieniu wzgledem
-kontroli dla  MASdla normalizacji  tak jak w punkcie 6 (p53P)',iloscMASPzad6))
-      print(paste(' Geny ktore wzrosly przynajmniej o 20% po napromienieniu wzgledem
-kontroli dla  RMA dla normalizacji  tak jak w punkcie 6 (p53M)',iloscRMAMzad6))
-      print(paste(' Geny ktore wzrosly przynajmniej o 20% po napromienieniu wzgledem
-kontroli dla  RMA dla normalizacji   tak jak w punkcie 6 (p53P)',iloscRMAPzad6))
+   o5 = paste(' Geny ktore wzrosly przynajmniej o 20% po napromienieniu wzgledem kontroli dla  MAS  dla normalizacji  tak jak w punkcie 6 (p53M)',iloscMASMzad6)
+   o6=paste(' Geny ktore wzrosly przynajmniej o 20% po napromienieniu wzgledem kontroli dla  MASdla normalizacji  tak jak w punkcie 6 (p53P)',iloscMASPzad6)
+    o7= paste(' Geny ktore wzrosly przynajmniej o 20% po napromienieniu wzgledem kontroli dla  RMA dla normalizacji  tak jak w punkcie 6 (p53M)',iloscRMAMzad6)
+     o8 = paste(' Geny ktore wzrosly przynajmniej o 20% po napromienieniu wzgledem kontroli dla  RMA dla normalizacji   tak jak w punkcie 6 (p53P)',iloscRMAPzad6)
       
+         lista = c(o1,o2,o3,o4,o5,o6,o7,o8)
+      for(i in lista){
+        paste(i)
+      }
       
   }
+  
       
-      
-      
+   
       
       
     })
